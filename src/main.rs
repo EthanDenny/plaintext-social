@@ -145,17 +145,10 @@ async fn message_page(id: web::Path<usize>) -> impl Responder {
         .body(format!("<h1>Message: {id}</h1>"))
 }
 
-#[get("/user/{user}")]
-async fn user_page(user: web::Path<String>) -> impl Responder {
-    let messages = &*(MESSAGES
-        .iter()
-        .filter(|message| message.account == user.as_str())
-        .map(|message| resolve_created_at(message))
-        .collect::<Vec<_>>());
-
+fn user_page_base(user: web::Path<String>, messages: &[Message], replies: bool) -> impl Responder {
     let mut context = Context::new();
     context.insert("base", BASE);
-    context.insert("replies", &false);
+    context.insert("replies", &replies);
     context.insert("name", get_display_name(user.as_str()));
     context.insert("account", user.as_str());
     context.insert("messages", messages);
@@ -171,30 +164,26 @@ async fn user_page(user: web::Path<String>) -> impl Responder {
     }
 }
 
+#[get("/user/{user}")]
+async fn user_page_default(user: web::Path<String>) -> impl Responder {
+    let messages = &*(MESSAGES
+        .iter()
+        .filter(|message| message.account == user.as_str())
+        .map(|message| resolve_created_at(message))
+        .collect::<Vec<_>>());
+
+    user_page_base(user, messages, false)
+}
+
 #[get("/user/{user}/replies")]
-async fn user_replies_page(user: web::Path<String>) -> impl Responder {
+async fn user_page_replies(user: web::Path<String>) -> impl Responder {
     let messages = &*(MESSAGES
         .iter()
         .filter(|message| message.account == user.as_str() && message.parent.is_some())
         .map(|message| resolve_created_at(message))
         .collect::<Vec<_>>());
 
-    let mut context = Context::new();
-    context.insert("base", BASE);
-    context.insert("replies", &true);
-    context.insert("name", get_display_name(user.as_str()));
-    context.insert("account", user.as_str());
-    context.insert("messages", messages);
-
-    match TEMPLATES.render("user.html", &context) {
-        Ok(body) => HttpResponse::Ok()
-            .content_type("text/html; charset=utf-8")
-            .body(body),
-        Err(err) => {
-            eprintln!("Template error: {}", err);
-            HttpResponse::InternalServerError().body("Internal Server Error")
-        }
-    }
+    user_page_base(user, messages, true)
 }
 
 #[actix_web::main]
@@ -204,8 +193,8 @@ async fn main() -> std::io::Result<()> {
             .service(Files::new("/static", "./static").show_files_listing())
             .service(index)
             .service(message_page)
-            .service(user_page)
-            .service(user_replies_page)
+            .service(user_page_default)
+            .service(user_page_replies)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
