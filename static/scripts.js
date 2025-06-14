@@ -1,3 +1,7 @@
+function $(id) {
+  return document.getElementById(id);
+}
+
 function handleLike(e) {
   const parts = e.target.innerHTML.split(" ");
 
@@ -19,3 +23,27 @@ function handleShare(id) {
       console.error("Failed to copy: ", err);
     });
 }
+
+const maxLength = 160;
+
+function updateCharCount(target) {
+  const charCount = $("char-count");
+  const messageInput = $("post-button");
+
+  const currentLength = target.value.length;
+
+  charCount.textContent = `${currentLength}/${maxLength}`;
+
+  if (currentLength > maxLength) {
+    charCount.style.color = "red";
+    messageInput.disabled = true;
+  } else {
+    charCount.style.color = "";
+    messageInput.disabled = false;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  var input = $("message-input");
+  if (input) updateCharCount(input);
+});

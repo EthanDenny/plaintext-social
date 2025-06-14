@@ -7,23 +7,32 @@ button {
 .chat-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 20rem;
   gap: 2rem;
+}
+p {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 .chat-message-footer {
   display: flex;
   justify-content: space-between;
 }
 .user-header {
+  display: flex;
+  flex-direction: column;
   text-align: left;
   width: 20rem;
+  padding-bottom: 1rem;
 }
 .root {
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   padding: 1rem;
+  gap: 1rem;
 }
 .italic {
   font-style: italic;
@@ -39,4 +48,27 @@ button {
   top: 0;
   left: 0;
   padding: 1rem;
+}
+.new-message {
+  width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.chat-message {
+  width: 100%;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+a:hover {
+  text-decoration: underline;
+}
+#post-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+#post-button:not(:disabled):hover {
+  text-decoration: underline;
 }

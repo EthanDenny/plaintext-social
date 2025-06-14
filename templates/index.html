@@ -1,10 +1,30 @@
 {% extends "base.html" %} {% block root %}
+<div class="new-message">
+  <textarea
+    style="
+      width: 100%;
+      height: 8rem;
+      font-size: 1rem;
+      padding: 0.25rem;
+      resize: none;
+    "
+    id="message-input"
+    type="text"
+    placeholder="What do you want to say?"
+    oninput="updateCharCount(event.target)"
+  ></textarea>
+  <div style="display: flex; justify-content: space-between">
+    <div id="char-count">0/160</div>
+    <button id="post-button" onclick="sendMessage()">Post</button>
+  </div>
+</div>
+<br />
 <div class="chat-container">
   {% for message in messages %}
   <div class="chat-message">
     <header>
-      <a href="/user/{{ message.account }}"
-        ><strong>{{message.display_name}}</strong></a
+      <a href="/user/{{ message.account }}" class="bold"
+        >{{message.display_name}}</a
       >
       @{{message.account}} • {{ message.created_at }}
     </header>
@@ -18,7 +38,7 @@
       </button>
       <button onclick="handleLike(event)">🩶 {{message.likes}}</button>
       <button onclick="handleShare('{{message.id}}')" style="padding-right: 0">
-        ⏏️
+        🔗
       </button>
     </footer>
   </div>
