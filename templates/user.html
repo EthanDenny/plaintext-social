@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block root %}
+<div class="user-header">
+  <div><span class="bold">{{name}}</span> @{{account}}</div>
+  <br />
+  <div style="display: flex; gap: 1rem">
+    {% if replies %}<button onclick="location.href='/user/{{account}}'">
+      Messages</button
+    >{% else %}
+    <div class="underline">Messages</div>
+    {% endif %} {% if not replies %}<button
+      onclick="location.href='/user/{{account}}/replies'"
+    >
+      Replies</button
+    >{% else %}
+    <div class="underline">Replies</div>
+    {% endif %}
+  </div>
+</div>
+<div class="chat-container">
+  <br />
+  {% if messages|length == 0 %}
+  <div class="italic">No messages found.</div>
+  {% endif %} {% for message in messages %}
+  <div class="messages-container">
+    <header>
+      <span class="bold">{{message.display_name}}</span>
+      @{{message.account}} • {{ message.created_at }}
+    </header>
+    <br />
+    <p>{{message.content}}</p>
+    <br />
+    <footer class="chat-message-footer">
+      <button onclick="location.href='/message/{{message.id}}'">
+        💬 {{message.replies}}
+      </button>
+      <button onclick="handleLike(event)">🩶 {{message.likes}}</button>
+      <button onclick="handleShare('{{message.id}}')">⏏️</button>
+    </footer>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

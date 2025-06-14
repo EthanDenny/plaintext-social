@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block root %}
+<div class="chat-container">
+  {% for message in messages %}
+  <div class="chat-message">
+    <header>
+      <a href="/user/{{ message.account }}"
+        ><strong>{{message.display_name}}</strong></a
+      >
+      @{{message.account}} • {{ message.created_at }}
+    </header>
+    <p>{{message.content}}</p>
+    <footer class="chat-message-footer">
+      <button
+        onclick="location.href='/message/{{message.id}}'"
+        style="padding-left: 0"
+      >
+        💬 {{message.replies}}
+      </button>
+      <button onclick="handleLike(event)">🩶 {{message.likes}}</button>
+      <button onclick="handleShare('{{message.id}}')" style="padding-right: 0">
+        ⏏️
+      </button>
+    </footer>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
