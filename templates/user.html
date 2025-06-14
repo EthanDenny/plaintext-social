@@ -3,12 +3,12 @@
   <a href="../../">← Back</a>
 </div>
 <div class="user-header">
-  <div class="bold" style="font-size: 1.5em">{{name}}</div>
-  <p class="italic">@{{account}}</p>
+  <div class="bold" style="font-size: 1.5em">{{display_name}}</div>
+  <p class="italic">@{{user_name}}</p>
   <div style="display: flex; gap: 1rem">
-    {% if replies %}<a href="/user/{{account}}">Messages</a>{% else %}
-    <div class="underline">Messages</div>
-    {% endif %} {% if not replies %}<a href="/user/{{account}}/replies">
+    {% if replies %}<a href="/user/{{user_name}}">Posts</a>{% else %}
+    <div class="underline">Posts</div>
+    {% endif %} {% if not replies %}<a href="/user/{{user_name}}/replies">
       Replies</a
     >{% else %}
     <div class="underline">Replies</div>
@@ -16,21 +16,23 @@
   </div>
 </div>
 <div class="chat-container">
-  {% if messages|length == 0 %}
-  <div class="italic">No messages found.</div>
-  {% endif %} {% for message in messages %}
-  <div class="chat-message">
+  {% if posts|length == 0 %}
+  <div class="italic">
+    No {% if not replies %}posts{% else %}replies{% endif %} found
+  </div>
+  {% endif %} {% for post in posts %}
+  <div class="chat-post">
     <header>
-      <span class="bold">{{message.display_name}}</span>
-      @{{message.account}} • {{ message.created_at }}
+      <span class="bold">{{post.author.display_name}}</span>
+      @{{post.author.user_name}} • {{ post.timediff }}
     </header>
-    <p>{{message.content}}</p>
-    <footer class="chat-message-footer">
-      <button onclick="location.href='/message/{{message.id}}'">
-        💬 {{message.replies}}
+    <p>{{post.content}}</p>
+    <footer class="chat-post-footer">
+      <button onclick="location.href='/post/{{post.id}}'">
+        💬 {{post.replies}}
       </button>
-      <button onclick="handleLike(event)">🩶 {{message.likes}}</button>
-      <button onclick="handleShare('{{message.id}}')">🔗</button>
+      <button onclick="handleLike(event)">🩶 {{post.likes}}</button>
+      <button onclick="handleShare('{{post.id}}')">🔗</button>
     </footer>
   </div>
   {% endfor %}

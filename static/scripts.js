@@ -13,7 +13,7 @@ function handleLike(e) {
 }
 
 function handleShare(id) {
-  const url = `${window.location.origin}/message/${id}`;
+  const url = `${window.location.origin}/post/${id}`;
   navigator.clipboard
     .writeText(url)
     .then(() => {
@@ -28,7 +28,7 @@ const maxLength = 160;
 
 function updateCharCount(target) {
   const charCount = $("char-count");
-  const messageInput = $("post-button");
+  const postInput = $("post-button");
 
   const currentLength = target.value.length;
 
@@ -36,14 +36,33 @@ function updateCharCount(target) {
 
   if (currentLength > maxLength) {
     charCount.style.color = "red";
-    messageInput.disabled = true;
+    postInput.disabled = true;
   } else {
     charCount.style.color = "";
-    messageInput.disabled = false;
+    postInput.disabled = false;
   }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  var input = $("message-input");
+  const input = $("post-input");
   if (input) updateCharCount(input);
 });
+
+function createPost() {
+  const input = $("post-input");
+
+  fetch("/post", {
+    method: "POST",
+    body: JSON.stringify({
+      content: $("post-input").value,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (response.ok) {
+      input.value = "";
+      document.getElementById("char-count").textContent = "0/160";
+    }
+  });
+}

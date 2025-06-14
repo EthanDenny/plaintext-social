@@ -15,7 +15,7 @@ p {
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
-.chat-message-footer {
+.chat-post-footer {
   display: flex;
   justify-content: space-between;
 }
@@ -49,13 +49,13 @@ p {
   left: 0;
   padding: 1rem;
 }
-.new-message {
+.new-post {
   width: 20rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
-.chat-message {
+.chat-post {
   width: 100%;
 }
 a {

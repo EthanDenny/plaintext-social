@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% block root %}
-<div class="new-message">
+<div class="new-post">
   <textarea
     style="
       width: 100%;
@@ -8,36 +8,37 @@
       padding: 0.25rem;
       resize: none;
     "
-    id="message-input"
+    id="post-input"
     type="text"
     placeholder="What do you want to say?"
     oninput="updateCharCount(event.target)"
+    id="content"
   ></textarea>
   <div style="display: flex; justify-content: space-between">
     <div id="char-count">0/160</div>
-    <button id="post-button" onclick="sendMessage()">Post</button>
+    <button id="post-button" onclick="createPost()">Post</button>
   </div>
 </div>
 <br />
 <div class="chat-container">
-  {% for message in messages %}
-  <div class="chat-message">
+  {% for post in posts %}
+  <div class="chat-post">
     <header>
-      <a href="/user/{{ message.account }}" class="bold"
-        >{{message.display_name}}</a
+      <a href="/user/{{ post.author.user_name }}" class="bold"
+        >{{post.author.display_name}}</a
       >
-      @{{message.account}} • {{ message.created_at }}
+      @{{post.author.user_name}} • {{ post.timediff }}
     </header>
-    <p>{{message.content}}</p>
-    <footer class="chat-message-footer">
+    <p>{{post.content}}</p>
+    <footer class="chat-post-footer">
       <button
-        onclick="location.href='/message/{{message.id}}'"
+        onclick="location.href='/post/{{post.id}}'"
         style="padding-left: 0"
       >
-        💬 {{message.replies}}
+        💬 {{post.replies}}
       </button>
-      <button onclick="handleLike(event)">🩶 {{message.likes}}</button>
-      <button onclick="handleShare('{{message.id}}')" style="padding-right: 0">
+      <button onclick="handleLike(event)">🩶 {{post.likes}}</button>
+      <button onclick="handleShare('{{post.id}}')" style="padding-right: 0">
         🔗
       </button>
     </footer>
