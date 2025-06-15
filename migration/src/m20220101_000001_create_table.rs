@@ -7,7 +7,6 @@ enum Post {
     UserId,
     Content,
     CreatedAt,
-    Replies,
     Likes,
     ParentId,
 }
@@ -47,7 +46,6 @@ impl MigrationTrait for Migration {
                     .col(integer(Post::UserId))
                     .col(string(Post::Content))
                     .col(timestamp(Post::CreatedAt).default(Expr::cust("CURRENT_TIMESTAMP")))
-                    .col(integer(Post::Replies).default(0))
                     .col(integer(Post::Likes).default(0))
                     .col(integer(Post::ParentId).null())
                     .foreign_key(

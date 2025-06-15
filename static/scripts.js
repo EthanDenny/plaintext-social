@@ -66,3 +66,24 @@ function createPost() {
     }
   });
 }
+
+function createReply(string_id) {
+  const id = parseInt(string_id, 10);
+  const input = $("post-input");
+
+  fetch("/reply", {
+    method: "POST",
+    body: JSON.stringify({
+      content: $("post-input").value,
+      parent_id: id,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (response.ok) {
+      input.value = "";
+      document.getElementById("char-count").textContent = "0/160";
+    }
+  });
+}

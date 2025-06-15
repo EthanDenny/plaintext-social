@@ -1,0 +1,72 @@
+{% extends "base.html" %} {% block root %}
+<div class="sidebar">
+  <a href="../../">← Back</a>
+</div>
+<div class="chat-container">
+  <div class="chat-post">
+    <header>
+      <a href="/user/{{ post.author.user_name }}" class="bold"
+        >{{post.author.display_name}}</a
+      >
+      @{{post.author.user_name}} • {{ post.timediff }}
+    </header>
+    <p>{{post.content}}</p>
+    <footer class="chat-post-footer">
+      <div>💬 {{post.replies}}</div>
+      <button onclick="handleLike(event)">🩶 {{post.likes}}</button>
+      <button onclick="handleShare('{{post.id}}')" style="padding-right: 0">
+        🔗
+      </button>
+    </footer>
+  </div>
+</div>
+<br />
+<div class="new-post">
+  <textarea
+    style="
+      width: 100%;
+      height: 8rem;
+      font-size: 1rem;
+      padding: 0.25rem;
+      resize: none;
+    "
+    id="post-input"
+    type="text"
+    placeholder="Want to reply?"
+    oninput="updateCharCount(event.target)"
+    id="content"
+  ></textarea>
+  <div style="display: flex; justify-content: space-between">
+    <div id="char-count">0/160</div>
+    <button id="post-button" onclick="createReply('{{ post.id }}')">
+      Reply
+    </button>
+  </div>
+</div>
+<br />
+<div class="chat-container">
+  {% for reply in replies %}
+  <div class="chat-post">
+    <header>
+      <a href="/user/{{ reply.author.user_name }}" class="bold"
+        >{{reply.author.display_name}}</a
+      >
+      @{{reply.author.user_name}} • {{ reply.timediff }}
+    </header>
+    <p>{{reply.content}}</p>
+    <footer class="chat-post-footer">
+      <button
+        onclick="location.href='/post/{{post.id}}'"
+        style="padding-left: 0"
+      >
+        💬 {{reply.replies}}
+      </button>
+      <button onclick="handleLike(event)">🩶 {{reply.likes}}</button>
+      <button onclick="handleShare('{{reply.id}}')" style="padding-right: 0">
+        🔗
+      </button>
+    </footer>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

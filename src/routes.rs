@@ -44,10 +44,23 @@ async fn index() -> impl Responder {
 }
 
 #[get("/post/{id}")]
-async fn post_page(id: web::Path<usize>) -> impl Responder {
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(format!("<h1>Post: {id}</h1>"))
+async fn post_page(id: web::Path<i32>) -> impl Responder {
+    let id = id.into_inner();
+
+    let post = db::get_post(id).await;
+    let replies = db::get_replies(id).await;
+
+    let mut context = Context::new();
+    context.insert("base", BASE);
+    context.insert("post", &post);
+    context.insert("replies", &replies);
+
+    match TEMPLATES.render("post.html", &context) {
+        Ok(body) => HttpResponse::Ok()
+            .content_type("text/html; charset=utf-8")
+            .body(body),
+        Err(err) => render_error(err),
+    }
 }
 
 async fn user_page_base(user: web::Path<String>, replies: bool) -> impl Responder {
@@ -98,6 +111,18 @@ struct NewPost {
 
 #[post("/post")]
 async fn new_post(post: web::Json<NewPost>) -> impl Responder {
-    println!("New post: {}", post.content);
+    db::create_post(1, post.into_inner().content, None).await;
+    HttpResponse::Created().finish()
+}
+
+#[derive(Deserialize)]
+struct NewReply {
+    content: String,
+    parent_id: i32,
+}
+
+#[post("/reply")]
+async fn new_reply(post: web::Json<NewReply>) -> impl Responder {
+    db::create_post(1, post.content.clone(), Some(post.parent_id)).await;
     HttpResponse::Created().finish()
 }

@@ -1,6 +1,9 @@
 use crate::entities::*;
 use chrono::Utc;
-use sea_orm::{ColumnTrait, Database, DatabaseConnection, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, EntityTrait, PaginatorTrait,
+    QueryFilter, Set,
+};
 use serde::{Deserialize, Serialize};
 
 pub async fn get_db_connection() -> DatabaseConnection {
@@ -58,7 +61,7 @@ pub struct Post {
     author: Option<User>,
     content: String,
     timediff: String,
-    replies: i32,
+    replies: u64,
     likes: i32,
     parent_id: Option<i32>,
 }
@@ -68,7 +71,7 @@ fn get_timediff(dt: chrono::DateTime<Utc>) -> String {
     let diff = now - dt;
 
     if diff.num_seconds() < 60 {
-        "< 1m".to_string()
+        "<1m".to_string()
     } else if diff.num_minutes() < 60 {
         format!("{}m", diff.num_minutes())
     } else if diff.num_hours() < 24 {
@@ -78,8 +81,36 @@ fn get_timediff(dt: chrono::DateTime<Utc>) -> String {
     }
 }
 
-async fn convert_post(post: post::Model) -> Post {
+pub async fn get_replies(post_id: i32) -> Vec<Post> {
+    let db = get_db_connection().await;
+
+    let replies = post::Entity::find()
+        .filter(post::Column::ParentId.eq(post_id))
+        .all(&db)
+        .await
+        .expect("Failed to get replies");
+
+    let mut replies_futures = replies.into_iter().map(convert_post);
+    let replies: Vec<Post> = futures::future::join_all(&mut replies_futures).await;
+
+    replies
+}
+
+async fn get_replies_count(post_id: i32) -> u64 {
+    let db = get_db_connection().await;
+
+    let replies_count = post::Entity::find()
+        .filter(post::Column::ParentId.eq(post_id))
+        .count(&db)
+        .await
+        .expect("Failed to count replies");
+
+    replies_count
+}
+
+pub async fn convert_post(post: post::Model) -> Post {
     let author = get_user(post.user_id).await;
+    let replies_count = get_replies_count(post.id).await;
 
     let timediff = get_timediff(post.created_at);
 
@@ -88,9 +119,39 @@ async fn convert_post(post: post::Model) -> Post {
         author,
         content: post.content,
         timediff,
-        replies: post.replies,
+        replies: replies_count,
         likes: post.likes,
         parent_id: post.parent_id,
+    }
+}
+
+pub async fn create_post(user_id: i32, content: String, parent_id: Option<i32>) -> i32 {
+    let db = get_db_connection().await;
+
+    let new_post = post::ActiveModel {
+        user_id: Set(user_id),
+        content: Set(content),
+        parent_id: Set(parent_id),
+        ..Default::default()
+    }
+    .insert(&db)
+    .await
+    .expect("Failed to create post");
+
+    new_post.id
+}
+
+pub async fn get_post(id: i32) -> Option<Post> {
+    let db = get_db_connection().await;
+
+    let post = post::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .expect("Failed to get post");
+
+    match post.map(|post| convert_post(post)) {
+        Some(post) => Some(post.await),
+        None => None,
     }
 }
 

@@ -10,7 +10,6 @@ pub struct Model {
     pub user_id: i32,
     pub content: String,
     pub created_at: DateTimeUtc,
-    pub replies: i32,
     pub likes: i32,
     pub parent_id: Option<i32>,
 }
