@@ -4,7 +4,7 @@ mod routes;
 
 use actix_files::Files;
 use actix_web::{App, HttpServer};
-use routes::{index, new_post, new_reply, post_page, user_page_default, user_page_replies};
+use routes::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -15,11 +15,14 @@ async fn main() -> std::io::Result<()> {
             App::new()
                 .service(Files::new("/static", "./static").show_files_listing())
                 .service(index)
+                .service(feed)
                 .service(post_page)
                 .service(user_page_default)
                 .service(user_page_replies)
                 .service(new_post)
                 .service(new_reply)
+                .service(login)
+                .service(new_user)
         })
         .bind(("127.0.0.1", 8080))?
         .run()

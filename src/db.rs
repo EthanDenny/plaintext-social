@@ -41,6 +41,17 @@ pub async fn get_user(user_id: i32) -> Option<User> {
     user.map(|user| convert_user(user))
 }
 
+pub async fn user_name_exists(user_name: &str) -> bool {
+    let db = get_db_connection().await;
+
+    let user = user::Entity::find()
+        .filter(user::Column::UserName.eq(user_name))
+        .one(&db)
+        .await;
+
+    user.is_ok()
+}
+
 pub async fn get_user_id_from_name(user_name: &str) -> Option<i32> {
     let db = get_db_connection().await;
 
@@ -51,6 +62,20 @@ pub async fn get_user_id_from_name(user_name: &str) -> Option<i32> {
         .expect("Failed to get user by name");
 
     user.map(|user| user.id)
+}
+
+pub async fn create_user(user_name: &str, display_name: &str) -> bool {
+    let db = get_db_connection().await;
+
+    let new_user = user::ActiveModel {
+        user_name: Set(user_name.to_string()),
+        display_name: Set(display_name.to_string()),
+        ..Default::default()
+    }
+    .insert(&db)
+    .await;
+
+    new_user.is_ok()
 }
 
 /* Posts */
@@ -159,6 +184,7 @@ pub async fn get_posts() -> Vec<Post> {
     let db = get_db_connection().await;
 
     let posts: Vec<post::Model> = post::Entity::find()
+        .filter(post::Column::ParentId.is_null())
         .all(&db)
         .await
         .expect("Failed to get posts");

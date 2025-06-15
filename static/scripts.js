@@ -54,6 +54,7 @@ function createPost() {
   fetch("/post", {
     method: "POST",
     body: JSON.stringify({
+      user_name: localStorage.getItem("user_name"),
       content: $("post-input").value,
     }),
     headers: {
@@ -74,6 +75,7 @@ function createReply(string_id) {
   fetch("/reply", {
     method: "POST",
     body: JSON.stringify({
+      user_name: localStorage.getItem("user_name"),
       content: $("post-input").value,
       parent_id: id,
     }),
@@ -84,6 +86,57 @@ function createReply(string_id) {
     if (response.ok) {
       input.value = "";
       document.getElementById("char-count").textContent = "0/160";
+    }
+  });
+}
+
+function login() {
+  const user_name = $("user_name").value;
+
+  fetch("/login", {
+    method: "POST",
+    body: JSON.stringify({
+      user_name,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (response.ok) {
+      const goto_feed = () => {
+        localStorage.setItem("user_name", user_name);
+        window.location.href = "/feed";
+      };
+
+      response.json().then((data) => {
+        console.log(data);
+
+        if (data.new_account) {
+          let newUser = prompt("New account, please enter a display name:");
+          if (newUser && newUser.trim() !== "") {
+            fetch("/user/new", {
+              method: "POST",
+              body: JSON.stringify({
+                user_name,
+                display_name: newUser.trim(),
+              }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }).then((response) => {
+              if (response.ok) {
+                goto_feed();
+              } else {
+                alert("Failed to create new account. Please try again.");
+              }
+            });
+          }
+        } else {
+          goto_feed();
+        }
+      });
+    } else {
+      alert("Login failed. Please try again.");
     }
   });
 }

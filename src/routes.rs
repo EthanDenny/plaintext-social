@@ -29,13 +29,25 @@ fn render_error(err: TeraError) -> HttpResponse {
 
 #[get("/")]
 async fn index() -> impl Responder {
+    let context = Context::new();
+
+    match TEMPLATES.render("index.html", &context) {
+        Ok(body) => HttpResponse::Ok()
+            .content_type("text/html; charset=utf-8")
+            .body(body),
+        Err(err) => render_error(err),
+    }
+}
+
+#[get("/feed")]
+async fn feed() -> impl Responder {
     let posts = db::get_posts().await;
 
     let mut context = Context::new();
     context.insert("base", BASE);
     context.insert("posts", &posts);
 
-    match TEMPLATES.render("index.html", &context) {
+    match TEMPLATES.render("feed.html", &context) {
         Ok(body) => HttpResponse::Ok()
             .content_type("text/html; charset=utf-8")
             .body(body),
@@ -106,23 +118,71 @@ async fn user_page_replies(user: web::Path<String>) -> impl Responder {
 
 #[derive(Deserialize)]
 struct NewPost {
+    user_name: String,
     content: String,
 }
 
 #[post("/post")]
 async fn new_post(post: web::Json<NewPost>) -> impl Responder {
-    db::create_post(1, post.into_inner().content, None).await;
-    HttpResponse::Created().finish()
+    let user_id = db::get_user_id_from_name(&post.user_name).await;
+    if let Some(user_id) = user_id {
+        db::create_post(user_id, post.into_inner().content, None).await;
+        HttpResponse::Created().finish()
+    } else {
+        HttpResponse::BadRequest().finish()
+    }
 }
 
 #[derive(Deserialize)]
 struct NewReply {
+    user_name: String,
     content: String,
     parent_id: i32,
 }
 
 #[post("/reply")]
 async fn new_reply(post: web::Json<NewReply>) -> impl Responder {
-    db::create_post(1, post.content.clone(), Some(post.parent_id)).await;
-    HttpResponse::Created().finish()
+    let user_id = db::get_user_id_from_name(&post.user_name).await;
+    if let Some(user_id) = user_id {
+        db::create_post(user_id, post.content.clone(), Some(post.parent_id)).await;
+        HttpResponse::Created().finish()
+    } else {
+        HttpResponse::BadRequest().finish()
+    }
+}
+
+#[derive(Deserialize)]
+struct Login {
+    user_name: String,
+}
+
+#[post("/login")]
+async fn login(data: web::Json<Login>) -> impl Responder {
+    let user_exists = db::user_name_exists(&data.user_name).await;
+
+    println!(
+        "Tried to login with user: {}, user exist: {}",
+        data.user_name, user_exists
+    );
+
+    HttpResponse::Created()
+        .content_type("application/json")
+        .body(format!(r#"{{"new_account": {}}}"#, !user_exists))
+}
+
+#[derive(Deserialize)]
+struct NewUser {
+    user_name: String,
+    display_name: String,
+}
+
+#[post("/user/new")]
+async fn new_user(data: web::Json<NewUser>) -> impl Responder {
+    let success = db::create_user(&data.user_name, &data.display_name).await;
+
+    if success {
+        HttpResponse::Created().finish()
+    } else {
+        HttpResponse::BadRequest().finish()
+    }
 }

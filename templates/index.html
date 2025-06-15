@@ -1,48 +1,27 @@
-{% extends "base.html" %} {% block root %}
-<div class="new-post">
-  <textarea
+<head>
+  <link rel="stylesheet" href="/static/reset.css" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="/static/scripts.js"></script>
+</head>
+<body>
+  <div
     style="
-      width: 100%;
-      height: 8rem;
-      font-size: 1rem;
-      padding: 0.25rem;
-      resize: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      gap: 2rem;
     "
-    id="post-input"
-    type="text"
-    placeholder="What do you want to say?"
-    oninput="updateCharCount(event.target)"
-    id="content"
-  ></textarea>
-  <div style="display: flex; justify-content: space-between">
-    <div id="char-count">0/160</div>
-    <button id="post-button" onclick="createPost()">Post</button>
+  >
+    <div class="bold">plaintext.social</div>
+    <input
+      type="text"
+      id="user_name"
+      style="font-family: monospace; padding: 0.25rem"
+      placeholder="Username"
+    />
+    <button id="login-button" onclick="login()">Login →</button>
   </div>
-</div>
-<br />
-<div class="chat-container">
-  {% for post in posts %}
-  <div class="chat-post">
-    <header>
-      <a href="/user/{{ post.author.user_name }}" class="bold"
-        >{{post.author.display_name}}</a
-      >
-      @{{post.author.user_name}} • {{ post.timediff }}
-    </header>
-    <p>{{post.content}}</p>
-    <footer class="chat-post-footer">
-      <button
-        onclick="location.href='/post/{{post.id}}'"
-        style="padding-left: 0"
-      >
-        💬 {{post.replies}}
-      </button>
-      <button onclick="handleLike(event)">🩶 {{post.likes}}</button>
-      <button onclick="handleShare('{{post.id}}')" style="padding-right: 0">
-        🔗
-      </button>
-    </footer>
-  </div>
-  {% endfor %}
-</div>
-{% endblock %}
+</body>
