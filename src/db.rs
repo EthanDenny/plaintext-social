@@ -2,7 +2,7 @@ use crate::entities::*;
 use chrono::Utc;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Database, DatabaseConnection, EntityTrait, PaginatorTrait,
-    QueryFilter, Set,
+    QueryFilter, QueryOrder, Set,
 };
 use serde::{Deserialize, Serialize};
 
@@ -111,6 +111,7 @@ pub async fn get_replies(post_id: i32) -> Vec<Post> {
 
     let replies = post::Entity::find()
         .filter(post::Column::ParentId.eq(post_id))
+        .order_by(post::Column::CreatedAt, sea_orm::Order::Desc)
         .all(&db)
         .await
         .expect("Failed to get replies");
@@ -185,6 +186,7 @@ pub async fn get_posts() -> Vec<Post> {
 
     let posts: Vec<post::Model> = post::Entity::find()
         .filter(post::Column::ParentId.is_null())
+        .order_by(post::Column::CreatedAt, sea_orm::Order::Desc)
         .all(&db)
         .await
         .expect("Failed to get posts");

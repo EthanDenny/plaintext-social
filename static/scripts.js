@@ -64,6 +64,7 @@ function createPost() {
     if (response.ok) {
       input.value = "";
       document.getElementById("char-count").textContent = "0/160";
+      window.location.reload();
     }
   });
 }
@@ -86,6 +87,7 @@ function createReply(string_id) {
     if (response.ok) {
       input.value = "";
       document.getElementById("char-count").textContent = "0/160";
+      window.location.reload();
     }
   });
 }

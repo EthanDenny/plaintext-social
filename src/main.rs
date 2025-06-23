@@ -3,31 +3,30 @@ mod entities;
 mod routes;
 
 use actix_files::Files;
-use actix_web::{App, HttpServer};
+use actix_web::{middleware::NormalizePath, App, HttpServer};
 use routes::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    if dotenvy::dotenv().ok().is_none() {
-        panic!("Failed to load .env file");
-    } else {
-        HttpServer::new(move || {
-            App::new()
-                .service(Files::new("/static", "./static").show_files_listing())
-                .service(index)
-                .service(feed)
-                .service(post_page)
-                .service(user_page_default)
-                .service(user_page_replies)
-                .service(new_post)
-                .service(new_reply)
-                .service(login)
-                .service(new_user)
-        })
-        .bind(("127.0.0.1", 8080))?
-        .run()
-        .await
-    }
+    dotenvy::dotenv().expect("Failed to load .env file");
+
+    HttpServer::new(move || {
+        App::new()
+            .wrap(NormalizePath::trim())
+            .service(Files::new("/static", "./static").show_files_listing())
+            .service(index)
+            .service(feed)
+            .service(post_page)
+            .service(user_page_default)
+            .service(user_page_replies)
+            .service(new_post)
+            .service(new_reply)
+            .service(login)
+            .service(new_user)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
 
 #[cfg(test)]
@@ -64,9 +63,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn create_data() {
-        if dotenvy::dotenv().ok().is_none() {
-            panic!("Failed to load .env file");
-        }
+        dotenvy::dotenv().expect("Failed to load .env file");
 
         create_user_and_posts(
             "ethandenny",
