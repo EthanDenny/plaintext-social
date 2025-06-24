@@ -8,8 +8,6 @@ use routes::*;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenvy::dotenv().expect("Failed to load .env file");
-
     HttpServer::new(move || {
         App::new()
             .wrap(NormalizePath::trim())
@@ -24,7 +22,7 @@ async fn main() -> std::io::Result<()> {
             .service(login)
             .service(new_user)
     })
-    .bind(("127.0.0.1", 9999))?
+    .bind(("0.0.0.0", 9999))?
     .run()
     .await
 }
@@ -63,8 +61,6 @@ mod tests {
 
     #[actix_rt::test]
     async fn create_data() {
-        dotenvy::dotenv().expect("Failed to load .env file");
-
         create_user_and_posts(
             "ethandenny",
             "Ethan Denny",

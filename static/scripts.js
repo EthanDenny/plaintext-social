@@ -111,8 +111,6 @@ function login() {
       };
 
       response.json().then((data) => {
-        console.log(data);
-
         if (data.new_account) {
           let newUser = prompt("New account, please enter a display name:");
           if (newUser && newUser.trim() !== "") {
